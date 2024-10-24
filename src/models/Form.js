@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, DATE } = require("sequelize");
 const sequelize = require("../config/db");
 const User = require("./User");
 const Question = require("./Question");
@@ -11,6 +11,10 @@ const Form = sequelize.define(
       defaultValue: DataTypes.UUIDV4
     },
     topic: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    title: {
       type: DataTypes.STRING(100),
       allowNull: false
     },

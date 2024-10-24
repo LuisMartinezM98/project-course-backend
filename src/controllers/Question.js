@@ -5,21 +5,21 @@ const createQuestionFromForm = async (questions, form_id) => {
   try {
     await Promise.all(
       questions.map(async (item) => {
-        const { type_question, options, ...restData } = item;
+        const { type_question, options, question } = item;
 
         const objDatos = {
           form_id,
-          type_question,
-          ...restData,
+          type_question_id: type_question,
+          question
         };
 
-        const question = await Question.create(objDatos);
-        if (type_question == 1) {
+        const questionData = await Question.create(objDatos);
+        if (["675aa799-c8ce-49ff-b783-2f401ae839e1", "ee2e80d2-e1b1-42a3-bc77-812e444f5c68"].includes(type_question)) {
           await Promise.all(
             options.map(async (optionItem) => {
               await createOptionBack(
                 optionItem,
-                question.dataValues.id_question
+                questionData.dataValues.id_question
               );
             })
           );

@@ -1,5 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
+const Question = require("./Question");
+const User = require("./User");
+const QuestionOption = require("./QuestionOptions");
 
 const Answer = sequelize.define(
   'answers', {
@@ -30,5 +33,9 @@ const Answer = sequelize.define(
     paranoid: true
   }
 );
+
+Answer.belongsTo(Question, { foreignKey: 'question_id' });
+Answer.belongsTo(QuestionOption, { foreignKey: 'option_id' });
+Answer.belongsTo(User, { foreignKey: 'user_id' });
 
 module.exports = Answer;

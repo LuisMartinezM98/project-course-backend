@@ -3,9 +3,10 @@ const QuestionOption = require("../models/QuestionOptions")
 const createOptionBack = async(option, question) => {
     try {
         const objData = {
-            option,
+            option_question: option.option,
             question_id: question
         }
+        console.log(option);
         await QuestionOption.create(objData);
         return true
     } catch (error) {
