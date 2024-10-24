@@ -12,7 +12,7 @@ dotenv.config();
 
 const app = express();
 
-syncModels();
+// syncModels();
 
 
 const corsOptions = {
