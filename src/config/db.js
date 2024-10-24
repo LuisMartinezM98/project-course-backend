@@ -9,6 +9,6 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
     port: process.env.DB_PORT
 });
 
-sequelize.sync({alter: true});
+sequelize.sync({force: true});
 
 module.exports = sequelize;

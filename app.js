@@ -12,6 +12,8 @@ dotenv.config();
 
 const app = express();
 
+syncModels();
+
 
 const corsOptions = {
   origin: function (origin, callback) {
