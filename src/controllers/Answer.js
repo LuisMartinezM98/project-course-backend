@@ -39,4 +39,38 @@ const getAnswers = async(req, res) => {
     }
 }
 
-module.exports = { getAnswers }
+const setAnswers = async (req, res) => {
+  const { answers } = req.body;
+  const { user } = req;
+
+  try {
+    for (const item of answers) {
+      if (['675aa799-c8ce-49ff-b783-2f401ae839e1', 'ee2e80d2-e1b1-42a3-bc77-812e444f5c68'].includes(item.type_question)) {
+        const option = await QuestionOption.findByPk(item.answer);
+        const objData = {
+          question_id: item.question_id,
+          user_id: user.id_user,
+          option_id: item.answer,
+          answer: option ? option.dataValues.option_question : 'Option not found',
+        };
+        await Answer.create(objData);
+      } else {
+        const objData = {
+          question_id: item.question_id,
+          user_id: user.id_user,
+          answer: item.answer,
+        };
+        await Answer.create(objData);
+      }
+    }
+    return res.status(200).send({ msg: 'Answers created' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ msg: 'Error saving answers' });
+  }
+};
+
+
+
+
+module.exports = { getAnswers, setAnswers }

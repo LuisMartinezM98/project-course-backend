@@ -94,7 +94,7 @@ const getLastForm = async (req, res) => {
   }
 };
 
-const getLastForms = async(req, res) => {
+const getLastForms = async (req, res) => {
   try {
     const lastForms = await sequelize.query(
       `
@@ -147,7 +147,7 @@ const getLastForms = async(req, res) => {
         type: sequelize.QueryTypes.SELECT,
       }
     );
-    
+
     if (lastForms.length === 0) {
       return res.status(204).json({ msg: "No form found" });
     }
@@ -158,8 +158,142 @@ const getLastForms = async(req, res) => {
       .status(500)
       .json({ message: "Error retrieving the last form", error });
   }
-}
+};
+
+const getSpecificForm = async (req, res) => {
+  const { id_form } = req.query;
+
+  try {
+    const form = await sequelize.query(
+      `
+      SELECT 
+        f.id_form,
+        f.title,
+        f.created_at,
+        f.topic,
+        f.description,
+        u.id_user,
+        u.name,
+        u.email,
+        COALESCE(
+            jsonb_agg(
+                jsonb_build_object(
+                    'id_question', q.id_question,
+                    'question_text', q.question,
+                    'type_question', jsonb_build_object(
+                        'id_type_question', tq.id_type_question,
+                        'type_name', tq.type_question
+                    ),
+                    'options', COALESCE(
+                        (
+                            SELECT jsonb_agg(
+                                jsonb_build_object(
+                                    'id_option', qo.id_option,
+                                    'option_text', qo.option_question
+                                )
+                            )
+                            FROM question_options AS qo
+                            WHERE qo.question_id = q.id_question
+                        ), '[]'
+                    )
+                )
+            ) FILTER (WHERE q.id_question IS NOT NULL), '[]'
+        ) AS questions
+      FROM 
+          forms AS f
+      JOIN 
+          users AS u ON f.user_id = u.id_user
+      LEFT JOIN 
+          questions AS q ON f.id_form = q.form_id
+      LEFT JOIN 
+          type_questions AS tq ON q.type_question_id = tq.id_type_question
+      WHERE 
+          f.id_form = :id_form
+      GROUP BY 
+          f.id_form, u.id_user
+      ORDER BY 
+          f.created_at DESC
+      LIMIT 1
+      `,
+      {
+        replacements: { id_form },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return res.status(200).send(form[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Something was wrong");
+  }
+};
+
+const getMyForms = async (req, res) => {
+  const { user } = req;
+  const {id_user} = user;
+
+  console.log(id_user);
+  try {
+    const myforms = await sequelize.query(
+      `
+      SELECT 
+    f.*, 
+    u.*, 
+    COALESCE(
+        jsonb_agg(
+            jsonb_build_object(
+                'id_question', q.id_question,
+                'question_text', q.question,
+                'type_question', jsonb_build_object(
+                    'id_type_question', tq.id_type_question,
+                    'type_name', tq.type_question
+                ),
+                'options', COALESCE(
+                    (
+                        SELECT jsonb_agg(
+                            jsonb_build_object(
+                                'id_option', qo.id_option,
+                                'option_text', qo.option_question
+                            )
+                        )
+                        FROM question_options AS qo
+                        WHERE qo.question_id = q.id_question
+                    ), '[]'
+                )
+            )
+        ) FILTER (WHERE q.id_question IS NOT NULL), '[]'
+    ) AS questions
+      FROM 
+          forms AS f
+      JOIN 
+          users AS u ON f.user_id = u.id_user
+      LEFT JOIN 
+          questions AS q ON f.id_form = q.form_id
+      LEFT JOIN 
+          type_questions AS tq ON q.type_question_id = tq.id_type_question
+      WHERE 
+          f.user_id = :userId
+      GROUP BY 
+          f.id_form, u.id_user
+      ORDER BY 
+          f.created_at DESC
+      `,
+      {
+        replacements: { userId: id_user },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    if (myforms.length === 0) {
+      return res.status(204).json({ msg: "No form found" });
+    }
+    return res.status(200).send(myforms);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error retrieving the last form", error });
+  }
+
+};
 
 Form.hasMany(Question, { foreignKey: "form_id", as: "questions" });
 
-module.exports = { getLastForm, createForm, getLastForms };
+module.exports = { getLastForm, createForm, getLastForms, getSpecificForm, getMyForms };
