@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Form = require("./Form");
+const TypeAccount = require("./TypeAccount");
 
 
 const User = sequelize.define(
@@ -28,6 +29,13 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    type_account_id: {
+      type: DataTypes.UUID,
+      references: {
+        model: TypeAccount,
+        key: "id_type_account",
+      },
+    },
   },
   {
     tableName: "users",
@@ -39,6 +47,6 @@ const User = sequelize.define(
   }
 );
 
-// User.hasMany(Form, { foreignKey: 'user_id' });
+User.belongsTo(TypeAccount, { foreignKey: "type_account_id" });
 
 module.exports = User;

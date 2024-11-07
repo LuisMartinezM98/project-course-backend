@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { generarJWT } = require("../helpers/generateJWT");
 const User = require("../models/User");
 const crypto = require("crypto");
+const TypeAccount = require("../models/TypeAccount");
 
 function verifyPassword(password, storedPassword) {
     const hash = crypto.createHash("sha256").update(password).digest("hex");
@@ -45,6 +46,12 @@ const singUp = async (req, res) => {
         email: email,
         deleted_at: null,
       },
+      include:[
+        {
+            model: TypeAccount,
+            attributes: ['id_type_account', 'type_account'],
+        }
+    ]
     });
     if (!usuario) {
       const err = new Error("Email not found");

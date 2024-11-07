@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const TypeAccount = require("../models/TypeAccount");
 
 const checkAuth = async (req, res, next) => {
     let token;
@@ -11,7 +12,13 @@ const checkAuth = async (req, res, next) => {
                 where:{
                     id_user: decoded.user.id_user,
                     deleted_at: null
-                }
+                },
+                include:[
+                    {
+                        model: TypeAccount,
+                        attributes: ['id_type_account', 'type_account'],
+                    }
+                ]
             })
             if(!req.user.active){
                 return res.status(401).send({msg: 'User blocked'});
